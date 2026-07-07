@@ -1,2 +1,2 @@
 # ACPIA
-Proposed Solution for hack KP hackathon
+Solution for hack KP hackathon
