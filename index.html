@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CaseScan - AI-Powered Investigation Support Platform</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Load Cytoscape.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.29.2/cytoscape.min.js"></script>
+  <!-- Load Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <!-- APP HEADER -->
+  <header id="app-header" class="app-header" style="display: none;">
+    <div class="brand-wrapper">
+      <div class="brand-crest">
+        <i data-lucide="shield-alert"></i>
+      </div>
+      <div>
+        <div class="brand-text-large">CaseScan <span class="brand-tag">v2.5</span></div>
+        <div style="font-size: 10px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase;">
+          Kerala Police Cyber Forensics Wing
+        </div>
+      </div>
+    </div>
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-view="dashboard">
+        <i data-lucide="layout-dashboard"></i> Command Center
+      </button>
+      <button class="nav-tab" data-view="workspace">
+        <i data-lucide="network"></i> Case Workspace
+      </button>
+    </nav>
+    <div class="user-profile">
+      <button class="btn-icon" id="btn-reset-db" title="Reset Demo DB" style="color: var(--accent-yellow); border-color: rgba(245,158,11,0.2);">
+        <i data-lucide="refresh-cw"></i>
+      </button>
+      <div class="user-info">
+        <div class="user-name" id="header-user-name">Inspector Gopinath K.</div>
+        <div class="user-role" id="header-user-role">Investigator</div>
+      </div>
+      <button class="btn-icon" id="btn-logout" title="Log Out">
+        <i data-lucide="log-out"></i>
+      </button>
+    </div>
+  </header>
+  <!-- VIEW: LOGIN -->
+  <main id="view-login" class="login-container" style="display: flex;">
+    <div class="glass-panel login-card glow-cyan-hover">
+      <div class="police-crest">
+        <i data-lucide="shield-check" style="width: 45px; height: 45px;"></i>
+      </div>
+      <h1 class="login-title">CASESCAN</h1>
+      <p class="login-subtitle">Cyber Patrol Terminal</p>
+      
+      <form id="login-form">
+        <div class="input-group">
+          <label class="input-label" for="login-username">Investigator ID</label>
+          <div class="input-wrapper">
+            <i data-lucide="user" class="input-icon"></i>
+            <input type="text" id="login-username" class="text-input" value="keralapolice" placeholder="Enter Investigator ID" required>
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label" for="login-password">Access Token Password</label>
+          <div class="input-wrapper">
+            <i data-lucide="lock" class="input-icon"></i>
+            <input type="password" id="login-password" class="text-input" value="cybercell2026" placeholder="Enter Password" required>
+          </div>
+        </div>
+        <div id="login-error" style="color: var(--accent-red); font-size: 13px; margin-bottom: 20px; text-align: left; font-family: var(--font-mono)"></div>
+        <button type="submit" class="btn-primary">
+          <i data-lucide="unlock"></i> Authenticate Device
+        </button>
+      </form>
+    </div>
+  </main>
+  <!-- VIEW: DASHBOARD -->
+  <main id="view-dashboard" class="main-content" style="display: none;">
+    <!-- Dashboard Stats Grid -->
+    <div class="dashboard-grid">
+      <div class="glass-panel stat-card">
+        <div>
+          <span class="input-label" style="margin-bottom: 0;">Total Evidence Uploads</span>
+          <div class="stat-val" id="stat-evidence">0</div>
+        </div>
+        <div class="stat-icon"><i data-lucide="hard-drive"></i></div>
+      </div>
+      
+      <div class="glass-panel stat-card">
+        <div>
+          <span class="input-label" style="margin-bottom: 0;">Confirmed Entities</span>
+          <div class="stat-val" id="stat-nodes-confirmed">0</div>
+        </div>
+        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.06); border-color: rgba(16, 185, 129, 0.2); color: var(--accent-green);">
+          <i data-lucide="check-square"></i>
+        </div>
+      </div>
+      <div class="glass-panel stat-card">
+        <div>
+          <span class="input-label" style="margin-bottom: 0;">Pending AI Proposed Links</span>
+          <div class="stat-val" id="stat-nodes-proposed">0</div>
+        </div>
+        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.06); border-color: rgba(245, 158, 11, 0.2); color: var(--accent-yellow);">
+          <i data-lucide="git-branch"></i>
+        </div>
+      </div>
+      <div class="glass-panel stat-card alert-stat">
+        <div>
+          <span class="input-label" style="margin-bottom: 0;">AI Synthetic Media Alerts</span>
+          <div class="stat-val" id="stat-synthetic">0</div>
+        </div>
+        <div class="stat-icon"><i data-lucide="alert-octagon"></i></div>
+      </div>
+    </div>
+    <!-- Main Dashboard Section -->
+    <div class="dashboard-layout">
+      <!-- Active Cases Left Column -->
+      <div>
+        <div class="section-header">
+          <h3 class="section-title"><i data-lucide="folder-open"></i> Active Case Files</h3>
+        </div>
+        <div class="case-list" id="dashboard-cases-list">
+          <!-- Dynamically Populated Cases -->
+        </div>
+      </div>
+      <!-- System Notification Right Column -->
+      <div>
+        <div class="section-header">
+          <h3 class="section-title"><i data-lucide="bell"></i> Lead Approvals Required</h3>
+          <button class="btn-primary" id="btn-open-ingest" style="width: auto; padding: 6px 12px; font-size: 12px; font-weight: 600; box-shadow: none;">
+            <i data-lucide="upload" style="width: 14px; height: 14px;"></i> Ingest Evidence Dump
+          </button>
+        </div>
+        <div class="glass-panel alerts-list" id="dashboard-alerts-list" style="padding: 20px; max-height: 480px; overflow-y: auto;">
+          <!-- Dynamically Populated Proposed Alerts -->
+        </div>
+      </div>
+    </div>
+  </main>
+  <!-- VIEW: WORKSPACE -->
+  <main id="view-workspace" class="workspace-container" style="display: none;">
+    <!-- LEFT COLUMN: Canvas / Timeline / Report Area -->
+    <div class="workspace-left">
+      <!-- Subnavigation workspace tabs -->
+      <div class="workspace-tabs">
+        <button class="w-tab active" data-tab="graph">
+          <i data-lucide="network" style="width: 15px; height: 15px;"></i> Evidence Graph Canvas
+        </button>
+        <button class="w-tab" data-tab="timeline">
+          <i data-lucide="clock" style="width: 15px; height: 15px;"></i> Investigation Timeline
+        </button>
+        <button class="w-tab" data-tab="report">
+          <i data-lucide="file-text" style="width: 15px; height: 15px;"></i> Case Summary Report (LLM)
+        </button>
+      </div>
+      <!-- Canvas Area -->
+      <div id="workspace-graph-area" class="canvas-area" style="display: block;">
+        <!-- Toolbar Overlay -->
+        <div class="graph-toolbar">
+          <button class="tool-btn" id="btn-zoom-in" title="Zoom In"><i data-lucide="zoom-in"></i></button>
+          <button class="tool-btn" id="btn-zoom-out" title="Zoom Out"><i data-lucide="zoom-out"></i></button>
+          <button class="tool-btn" id="btn-zoom-fit" title="Fit to Element Bounds"><i data-lucide="maximize"></i></button>
+        </div>
+        <!-- Legend Overlay -->
+        <div class="glass-panel graph-legend">
+          <div class="legend-item"><div class="legend-color" style="background: #ef4444;"></div><span>Suspect</span></div>
+          <div class="legend-item"><div class="legend-color" style="background: #3b82f6;"></div><span>Device</span></div>
+          <div class="legend-item"><div class="legend-color" style="background: #00f0ff;"></div><span>Evidence File</span></div>
+          <div class="legend-item"><div class="legend-color" style="background: #a855f7;"></div><span>Face Identity</span></div>
+          <div class="legend-item"><div class="legend-color" style="background: #f59e0b;"></div><span>Location Coordinates</span></div>
+          <div class="legend-item"><div class="legend-color" style="background: #10b981;"></div><span>Platform Account</span></div>
+          <div class="legend-item" style="margin-top: 5px; padding-top: 5px; border-top: 1px solid rgba(255,255,255,0.08);">
+            <div style="border-top: 2.5px dashed #f59e0b; width: 15px; margin-right: 8px;"></div>
+            <span>Proposed Link (AI Lead)</span>
+          </div>
+        </div>
+        <!-- Cytoscape Target -->
+        <div id="cy"></div>
+      </div>
+      <!-- Timeline Area -->
+      <div id="workspace-timeline-area" class="timeline-panel" style="display: none;">
+        <div style="max-width: 800px; margin: 0 auto;">
+          <h3 style="font-family: var(--font-title); font-size: 22px; margin-bottom: 25px;">
+            Cross-Source Reconstructed Chronology
+          </h3>
+          <div class="timeline-track" id="timeline-list">
+            <!-- Timeline elements dynamically generated -->
+          </div>
+        </div>
+      </div>
+      <!-- Report Area -->
+      <div id="workspace-report-area" class="report-panel" style="display: none;">
+        <div id="report-container">
+          <!-- Report editor dynamic content -->
+        </div>
+      </div>
+    </div>
+    <!-- RIGHT COLUMN: Side Drawer Inspector -->
+    <aside class="workspace-right" id="inspector-content">
+      <!-- Populated dynamically via selection -->
+    </aside>
+  </main>
+  <!-- MODAL: EVIDENCE INGESTION QUEUE -->
+  <div id="modal-ingestion" class="modal-overlay" style="display: none;">
+    <div class="glass-panel modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><i data-lucide="upload-cloud"></i> Case Evidence Ingestion</h3>
+        <button class="btn-icon" id="btn-close-modal" style="padding: 5px; border:none; background:none; color:var(--text-secondary);"><i data-lucide="x"></i></button>
+      </div>
+      <!-- STEP 1: Select File from Ingestion Queue -->
+      <div id="ingest-select-container">
+        <p style="font-size:13px; color:var(--text-secondary); margin-bottom: 20px;">
+          Select a forensic device dump package or data dump payload to process. CaseScan Agent Core will run perceptual hash checks and start step-by-step entity extraction and graph reconstruction.
+        </p>
+        
+        <div id="ingest-queue-list">
+          <!-- Queue items populate here -->
+        </div>
+      </div>
+      <!-- STEP 2: Progress Stepper -->
+      <div id="ingest-progress-container" style="display: none;">
+        <div class="stepper-container" id="ingest-stepper">
+          <!-- Steps loaded dynamically during process -->
+        </div>
+        <p style="font-size:11px; color:var(--text-muted); text-align: center;">
+          Under air-gapped forensics protocols, data processing occurs entirely within state on-premises infrastructure.
+        </p>
+      </div>
+    </div>
+  </div>
+  <!-- LOAD APPLICATION SCRIPTS -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
